@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Rails 8.1 application with Zoom Video SDK integration. The app uses modern Rails tooling with esbuild for JavaScript bundling, Tailwind CSS v4 for styling, and SQLite3 for the database. The primary feature is video conferencing functionality powered by the Zoom Video SDK UI Toolkit.
+This is a Rails 8.1 application set up with Zoom Video SDK dependencies. The app uses modern Rails tooling with esbuild for JavaScript bundling, Tailwind CSS v3 for styling, and SQLite3 for the database. The Zoom Video SDK UI Toolkit is installed and configured in the JavaScript layer, but no video conferencing features have been implemented yet.
 
 ## Development Commands
 
@@ -30,7 +30,7 @@ This is a Rails 8.1 application with Zoom Video SDK integration. The app uses mo
 
 ### Testing
 - `bin/rails test` - Run all tests
-- `bin/rails test test/controllers/video_controller_test.rb` - Run specific test file
+- `bin/rails test test/controllers/some_controller_test.rb` - Run specific test file
 - `bin/rails test:system` - Run system tests (requires Selenium)
 
 ### Code Quality
@@ -40,52 +40,41 @@ This is a Rails 8.1 application with Zoom Video SDK integration. The app uses mo
 
 ## Architecture
 
-### Video Conferencing Flow
-
-The Zoom Video SDK integration follows this pattern:
-
-1. **Frontend Request** (`app/views/video/test.html.erb`): User fills session details (session name, username, passcode, role)
-2. **JWT Generation** (`video#generate_jwt` at `app/controllers/video_controller.rb:5`): Backend generates a signed JWT token using Zoom SDK credentials stored in Rails credentials
-3. **Session Join**: Frontend receives JWT and uses `window.uitoolkit.joinSession()` to connect to Zoom session
-4. **Video UI**: Zoom Video SDK UI Toolkit renders in the `#sessionContainer` div
-
-### Credentials Management
-
-Zoom SDK credentials are stored in encrypted Rails credentials:
-- `Rails.application.credentials.zoom.sdk_key` - Zoom SDK Key
-- `Rails.application.credentials.zoom.sdk_secret` - Zoom SDK Secret
-- Edit with: `bin/rails credentials:edit`
-
-### JWT Token Structure
-
-Generated JWTs (`app/controllers/video_controller.rb:12`) contain:
-- `app_key`: Zoom SDK key
-- `tpc`: Session topic/name
-- `role_type`: 0 (participant) or 1 (host)
-- `version`: Always 1
-- `iat`: Issued at time (30 seconds in the past to account for clock skew)
-- `exp`: Expiration (2 hours from issuance)
-
 ### JavaScript Architecture
 
 - **Entry point**: `app/javascript/application.js`
 - **Bundler**: esbuild (configured in `package.json`)
 - **Framework**: Hotwire (Turbo + Stimulus)
-- **Zoom SDK**: Imported as `uitoolkit` and exposed globally via `window.uitoolkit`
+- **Zoom SDK**: The `@zoom/videosdk-ui-toolkit` package is imported in `app/javascript/application.js:4` and exposed globally as `window.uitoolkit`, but no video conferencing features have been implemented yet
 - **Controllers**: Stimulus controllers in `app/javascript/controllers/`
 
 ### CSS Architecture
 
-- **Framework**: Tailwind CSS v4 (using standalone CLI)
+- **Framework**: Tailwind CSS v3.4.17
 - **Source**: `app/assets/stylesheets/application.tailwind.css`
 - **Output**: `app/assets/builds/application.css`
-- Uses Tailwind's `@tailwindcss/cli` package directly (no config file needed for v4)
+- Bundled via cssbundling-rails with npm script
+
+## Implementing Zoom Video Conferencing
+
+To implement video conferencing features, the following would be needed:
+
+1. **Backend Setup**:
+   - Store Zoom SDK credentials in Rails credentials (`zoom.sdk_key` and `zoom.sdk_secret`)
+   - Create a controller to generate JWT tokens for Zoom sessions (the `jwt` gem is already installed)
+
+2. **Frontend Setup**:
+   - Create views with a session container div for the Zoom UI
+   - Add a form for users to enter session details (name, role, etc.)
+   - Use JavaScript to call the backend JWT endpoint
+   - Initialize Zoom session with `window.uitoolkit.joinSession()`
+
+3. **Routes**:
+   - Add routes for the video pages and JWT generation endpoint
 
 ## Key Routes
 
-- `GET /video/test` - Video conferencing test page
-- `POST /video/generate_jwt` - Generate JWT for Zoom session (expects `session_name` and optional `role_type`)
-- `GET /up` - Health check endpoint
+- `GET /up` - Health check endpoint (Rails health status)
 
 ## Dependencies
 
@@ -98,7 +87,7 @@ Generated JWTs (`app/controllers/video_controller.rb:12`) contain:
 - Security/Quality: `brakeman`, `bundler-audit`, `rubocop-rails-omakase`
 
 ### JavaScript Packages
-- `@zoom/videosdk-ui-toolkit` 2.2.10-1 - Zoom Video SDK UI components
-- `@hotwired/turbo-rails`, `@hotwired/stimulus` - Hotwire
-- `tailwindcss` 4.1.17 - CSS framework
-- `esbuild` - JavaScript bundler
+- `@zoom/videosdk-ui-toolkit` 2.2.10-1 - Zoom Video SDK UI components (installed but not yet implemented)
+- `@hotwired/turbo-rails` 8.0.20, `@hotwired/stimulus` 3.2.2 - Hotwire stack
+- `tailwindcss` 3.4.17 - CSS framework
+- `esbuild` 0.25.12 - JavaScript bundler
