@@ -1,7 +1,9 @@
 import esbuild from 'esbuild'
 import vuePlugin from 'esbuild-plugin-vue3'
 
-esbuild.build({
+const isWatch = process.argv.includes('--watch')
+
+const config = {
   entryPoints: ['app/javascript/application.js'],
   bundle: true,
   sourcemap: true,
@@ -12,4 +14,12 @@ esbuild.build({
   loader: {
     '.vue': 'js'
   }
-}).catch(() => process.exit(1))
+}
+
+if (isWatch) {
+  const context = await esbuild.context(config)
+  await context.watch()
+  console.log('👀 Watching for changes...')
+} else {
+  await esbuild.build(config)
+}

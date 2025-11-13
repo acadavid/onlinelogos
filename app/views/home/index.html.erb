@@ -1,7 +1,18 @@
 <div class="container mx-auto px-4 py-8">
   <h1 class="text-4xl font-bold mb-2">Speech Therapy App - Component Tests</h1>
-  <p class="text-gray-600 mb-8">Testing Vue 3 + Konva.js integration</p>
+  <p class="text-gray-600 mb-2">Testing Vue 3 + Konva.js + Colyseus integration</p>
+  <p class="text-sm text-blue-600 mb-8">
+    ⚠️ Make sure the Colyseus server is running: <code class="bg-gray-100 px-2 py-1 rounded">bin/dev</code>
+  </p>
 
+  <!-- Main Demo: Synchronized Canvas -->
+  <div class="mb-12">
+    <h2 class="text-2xl font-bold mb-4">🎮 Real-Time Multiplayer Demo</h2>
+    <div id="synced-app"></div>
+  </div>
+
+  <!-- Supporting Demos -->
+  <h2 class="text-2xl font-bold mb-4">Component Demos</h2>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <div id="vue-app"></div>
     <div id="konva-app"></div>
@@ -10,6 +21,9 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const syncedApp = window.createVueApp(window.VueComponents.SyncedCanvas)
+    syncedApp.mount('#synced-app')
+
     const vueApp = window.createVueApp(window.VueComponents.HelloVue)
     vueApp.mount('#vue-app')
 
