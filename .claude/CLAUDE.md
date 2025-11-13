@@ -11,9 +11,11 @@ This is a Rails 8.1 speech therapy application that will provide a split-screen 
 The app uses modern Rails tooling with esbuild for JavaScript bundling, Vue 3 for interactive components, Tailwind CSS v3 for styling, and SQLite3 for the database.
 
 ### Current Status
-- Vue 3 is set up for building game canvas components
-- Zoom Video SDK UI Toolkit is installed and configured (not yet implemented)
-- Game synchronization (Konva.js + Colyseus) not yet implemented
+- Vue 3 is set up and working with interactive components
+- Konva.js is installed and integrated with Vue via vue-konva for canvas rendering
+- Test page demonstrates both Vue and Konva working together
+- Zoom Video SDK UI Toolkit is installed (not yet implemented)
+- Game synchronization with Colyseus not yet implemented
 
 ## Development Commands
 
@@ -78,6 +80,32 @@ Vue is used for interactive components (like game canvases) while Rails handles 
 
 This is NOT a full SPA - Rails renders pages, Vue handles specific interactive areas.
 
+### Konva.js Canvas Rendering
+
+Konva.js is integrated with Vue 3 via the vue-konva wrapper for building interactive canvas-based games:
+
+- **Library**: Konva v10.0.8 for HTML5 canvas manipulation
+- **Vue Integration**: vue-konva v3.2.6 provides Vue components like `<v-stage>`, `<v-layer>`, `<v-circle>`, `<v-rect>`, etc.
+- **Setup**: VueKonva plugin is automatically registered when using `window.createVueApp()` (see `app/javascript/application.js:14`)
+- **Example Component**: `KonvaDemo.vue` at `app/javascript/components/KonvaDemo.vue` demonstrates:
+  - Creating a Konva stage (canvas) with multiple layers
+  - Drawing shapes (circles, stars, rectangles, text)
+  - Making shapes draggable and interactive
+  - Handling click events and state changes
+
+**Usage in Vue components**:
+```vue
+<template>
+  <v-stage :config="{ width: 800, height: 600 }">
+    <v-layer>
+      <v-circle :config="{ x: 100, y: 100, radius: 50, fill: 'blue', draggable: true }" />
+    </v-layer>
+  </v-stage>
+</template>
+```
+
+All Konva shapes support reactive Vue properties, so changes to your component's data automatically update the canvas.
+
 ### CSS Architecture
 
 - **Framework**: Tailwind CSS v3.4.17
@@ -87,11 +115,16 @@ This is NOT a full SPA - Rails renders pages, Vue handles specific interactive a
 
 ## Planned Architecture
 
-### Game Implementation (Not Yet Implemented)
-- **Konva.js** with **vue-konva** for canvas rendering inside Vue components
-- **Colyseus** for real-time state synchronization between therapist and patient
-- **Server-authoritative architecture**: All game logic runs on Colyseus server, clients only display state
+### Game Implementation
+
+**Current Status**:
+- ✅ **Konva.js** with **vue-konva** installed and working for canvas rendering inside Vue components
+- ⏳ **Colyseus** - Not yet installed, needed for real-time state synchronization between therapist and patient
+
+**When implementing Colyseus**:
+- Use **server-authoritative architecture**: All game logic runs on Colyseus server, clients only display state
 - **Authentication**: Therapist/patient roles authenticated via Rails, passed to Colyseus via signed JWT tokens
+- Colyseus state updates will be reflected in Vue reactive data, which automatically updates the Konva canvas
 
 ### Video Conferencing (Not Yet Implemented)
 
@@ -117,8 +150,8 @@ To implement video conferencing features:
 
 ## Key Routes
 
-- `GET /` (root) - Home page with Vue 3 test component (`home#index`)
-- `GET /home/index` - Vue 3 test page
+- `GET /` (root) - Home page with Vue 3 and Konva test components (`home#index`)
+- `GET /home/index` - Component test page (Vue + Konva demos)
 - `GET /up` - Health check endpoint (Rails health status)
 
 ## Dependencies
@@ -134,11 +167,12 @@ To implement video conferencing features:
 ### JavaScript Packages
 - `vue` 3.5.24 - Vue 3 framework for interactive components
 - `esbuild-plugin-vue3` 0.5.1 - esbuild plugin to compile .vue single-file components
+- `konva` 10.0.8 - HTML5 canvas library for interactive 2D graphics
+- `vue-konva` 3.2.6 - Vue wrapper for Konva.js, provides `<v-stage>`, `<v-layer>`, shape components
 - `@zoom/videosdk-ui-toolkit` 2.2.10-1 - Zoom Video SDK UI components (installed but not yet implemented)
 - `@hotwired/turbo-rails` 8.0.20, `@hotwired/stimulus` 3.2.2 - Hotwire stack
 - `tailwindcss` 3.4.17 - CSS framework
 - `esbuild` 0.25.12 - JavaScript bundler
 
 ### Packages to Install Later
-- `konva` and `vue-konva` - Canvas rendering for games
-- `colyseus.js` - Client library for real-time game state synchronization
+- `colyseus.js` - Client library for real-time game state synchronization with Colyseus server
