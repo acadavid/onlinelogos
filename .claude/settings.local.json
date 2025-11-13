@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:css:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "mcp__server-puppeteer__puppeteer_navigate",
+      "mcp__server-puppeteer__puppeteer_screenshot",
+      "mcp__server-puppeteer__puppeteer_click",
+      "mcp__server-puppeteer__puppeteer_evaluate"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
