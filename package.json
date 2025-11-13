@@ -5,13 +5,15 @@
     "esbuild": "^0.25.12"
   },
   "scripts": {
-    "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
+    "build": "node esbuild.config.mjs",
     "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.20",
     "@zoom/videosdk-ui-toolkit": "^2.2.10-1",
-    "tailwindcss": "^3.4.17"
+    "esbuild-plugin-vue3": "^0.5.1",
+    "tailwindcss": "^3.4.17",
+    "vue": "^3.5.24"
   }
 }
