@@ -6,7 +6,15 @@ import { createServer } from 'http'
 import { GameRoom } from './rooms/GameRoom'
 
 const app = express()
-app.use(cors())
+
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:3000']
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}))
 app.use(express.json())
 
 const httpServer = createServer(app)

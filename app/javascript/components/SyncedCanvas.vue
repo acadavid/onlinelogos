@@ -64,6 +64,10 @@ const props = defineProps({
   roomId: {
     type: String,
     required: true
+  },
+  colyseusUrl: {
+    type: String,
+    default: 'ws://localhost:2567'
   }
 })
 
@@ -72,7 +76,7 @@ const stageConfig = reactive({
   height: 400
 })
 
-const client = new Client('ws://localhost:2567')
+const client = new Client(props.colyseusUrl)
 let room = null
 
 const connected = ref(false)

@@ -4,7 +4,7 @@
   "description": "Colyseus server for speech therapy app game synchronization",
   "main": "src/index.ts",
   "scripts": {
-    "start": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
     "build": "tsc",
     "dev": "tsx watch src/index.ts"
   },

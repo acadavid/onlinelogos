@@ -52,9 +52,13 @@ RUN bundle install && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
-# Install node modules
+# Install node modules for Rails app
 COPY package.json yarn.lock ./
 RUN yarn install --immutable
+
+# Install node modules for Colyseus server
+COPY colyseus-server/package.json colyseus-server/package-lock.json* ./colyseus-server/
+RUN cd colyseus-server && npm ci
 
 # Copy application code
 COPY . .
@@ -66,12 +70,22 @@ RUN bundle exec bootsnap precompile -j 1 app/ lib/
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
-
+# Remove Rails node_modules (keeping Colyseus node_modules)
 RUN rm -rf node_modules
 
 
 # Final stage for app image
 FROM base
+
+# Install Node.js for Colyseus server
+ARG NODE_VERSION=20.10.0
+ENV PATH=/usr/local/node/bin:$PATH
+RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
+    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
+    rm -rf /tmp/node-build-master
+
+# Install foreman for process management
+RUN gem install foreman
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
@@ -85,6 +99,8 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# Expose ports for Rails (80) and Colyseus (2567)
+EXPOSE 80 2567
+
+# Start both Rails and Colyseus servers via foreman
+CMD ["foreman", "start", "-f", "Procfile"]
