@@ -6,7 +6,8 @@
   },
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
+    "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
+    "postinstall": "cp node_modules/@zoom/videosdk-ui-toolkit/dist/videosdk-ui-toolkit.css app/assets/stylesheets/"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
