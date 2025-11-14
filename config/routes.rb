@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "room/:id", to: "home#room", as: :room
+  post "zoom/generate_jwt", to: "zoom#generate_jwt"
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

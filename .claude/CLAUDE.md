@@ -14,9 +14,11 @@ The app uses modern Rails tooling with esbuild for JavaScript bundling, Vue 3 fo
 - ✅ Vue 3 is set up and working with interactive components
 - ✅ Konva.js is installed and integrated with Vue via vue-konva for canvas rendering
 - ✅ Colyseus server and client installed and working for real-time multiplayer synchronization
-- ✅ Test page demonstrates Vue + Konva + Colyseus all working together with real-time sync
-- ⏳ Zoom Video SDK UI Toolkit is installed (not yet implemented)
+- ✅ Zoom Video SDK UI Toolkit is integrated with JWT authentication
+- ✅ Split-screen layout: game (70%) + video call (30%)
+- ✅ Room-based URLs for shareable multiplayer sessions
 - ⏳ Authentication/authorization for therapist/patient roles not yet implemented
+- ⏳ Actual therapy games (currently just draggable shapes demo)
 
 ## Development Commands
 
@@ -152,32 +154,45 @@ All Konva shapes support reactive Vue properties, so changes to your component's
 - ⏳ Room management (creating therapy sessions with specific participants)
 - ⏳ Actual therapy game logic (not just draggable shapes)
 
-### Video Conferencing (Not Yet Implemented)
+### Video Conferencing with Zoom SDK
 
-To implement video conferencing features:
+**Status**: ✅ Implemented
 
-1. **Backend Setup**:
-   - Store Zoom SDK credentials in Rails credentials (`zoom.sdk_key` and `zoom.sdk_secret`)
-   - Create a controller to generate JWT tokens for Zoom sessions (the `jwt` gem is already installed)
+**Configuration**:
+- Zoom SDK credentials stored in `config/zoom.yml`
+- JWT generation endpoint: `POST /zoom/generate_jwt`
+- Controller: `app/controllers/zoom_controller.rb`
 
-2. **Frontend Setup**:
-   - Create views with a session container div for the Zoom UI
-   - Add a form for users to enter session details (name, role, etc.)
-   - Use JavaScript to call the backend JWT endpoint
-   - Initialize Zoom session with `window.uitoolkit.joinSession()`
+**Frontend Component**: `ZoomVideo.vue` at `app/javascript/components/ZoomVideo.vue`
+- User enters their name
+- Clicks "Join Video Call" button
+- Fetches JWT token from backend
+- Initializes Zoom Video SDK UI Toolkit
+- Features enabled: video, audio, screen share, chat, users list
 
-3. **Routes**:
-   - Add routes for the video pages and JWT generation endpoint
+**Backend JWT Generation**:
+- Reads credentials from `config/zoom.yml`
+- Generates JWT with 2-hour expiration
+- Session name based on room ID
+- All users as hosts (role_type: 1)
 
-### Split-Screen Layout (Not Yet Implemented)
-- Left side: Vue component with Konva canvas (game area)
-- Right side: Zoom Video SDK container
-- Note: Video and game state are completely separate, no state sharing needed
+### Split-Screen Layout
+
+**Status**: ✅ Implemented
+
+The app uses a full-screen split layout:
+- **Left side (70%)**: Synchronized game canvas with Konva + Colyseus
+- **Right side (30%)**: Zoom Video SDK video call interface
+- Header bar with session URL for sharing
+- Both systems are independent - no state sharing between game and video
 
 ## Key Routes
 
-- `GET /` (root) - Home page with all component demos: Vue, Konva, and Colyseus real-time sync (`home#index`)
-- `GET /home/index` - Component test page (Vue + Konva + Colyseus demos)
+- `GET /` (root) - Redirects to a new room with random ID (`home#index`)
+- `GET /room/:id` - Therapy session room with split-screen layout (`home#room`)
+  - Left: Synchronized game canvas
+  - Right: Zoom video call interface
+- `POST /zoom/generate_jwt` - Generate JWT token for Zoom SDK authentication
 - `GET /up` - Health check endpoint (Rails health status)
 - `WS ws://localhost:2567` - Colyseus WebSocket server for game rooms
 
