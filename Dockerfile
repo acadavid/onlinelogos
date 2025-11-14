@@ -50,9 +50,9 @@ RUN bundle install && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
-# Install node modules for Rails app
+# Install node modules for Rails app (skip postinstall to avoid directory issues)
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Install node modules for Colyseus server
 COPY colyseus-server/package.json colyseus-server/package-lock.json* ./colyseus-server/
