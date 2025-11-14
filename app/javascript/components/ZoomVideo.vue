@@ -81,7 +81,19 @@ async function joinSession() {
       sessionName: props.sessionName,
       userName: userName.value,
       sessionPasscode: '',
-      features: ['video', 'audio', 'share', 'chat', 'users']
+      featuresOptions: {
+        video: { enable: true },
+        audio: { enable: true },
+        share: { enable: false },
+        chat: { enable: false },
+        users: { enable: false },
+        settings: { enable: true },
+        recording: { enable: false },
+        feedback: { enable: false },
+        subsession: { enable: false },
+        caption: { enable: false },
+        header: { enable: false }
+      }
     }
 
     console.log('Joining Zoom session with config:', config)

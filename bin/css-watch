@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Wrapper script to keep Tailwind CSS watch mode running
+
+set -e
+
+echo "Building Tailwind CSS..."
+npx tailwindcss \
+  -i ./app/assets/stylesheets/application.tailwind.css \
+  -o ./app/assets/builds/application.css
+
+echo "Starting Tailwind CSS watcher..."
+while true; do
+  npx tailwindcss \
+    -i ./app/assets/stylesheets/application.tailwind.css \
+    -o ./app/assets/builds/application.css \
+    --watch \
+    || sleep 2
+done
