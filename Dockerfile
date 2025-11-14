@@ -50,9 +50,10 @@ RUN bundle install && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
-# Install node modules for Rails app (skip postinstall to avoid directory issues)
+# Install node modules for Rails app
+# Create directory structure first so postinstall script doesn't fail
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN mkdir -p app/assets/stylesheets && npm ci
 
 # Install node modules for Colyseus server
 COPY colyseus-server/package.json colyseus-server/package-lock.json* ./colyseus-server/
@@ -61,11 +62,7 @@ RUN cd colyseus-server && npm ci
 # Copy application code
 COPY . .
 
-# Precompile bootsnap code for faster boot times.
-# -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
-RUN bundle exec bootsnap precompile -j 1 app/ lib/
-
-# Copy Zoom SDK CSS before precompiling assets
+# Re-copy Zoom SDK CSS (gets overwritten by COPY . .)
 RUN cp node_modules/@zoom/videosdk-ui-toolkit/dist/videosdk-ui-toolkit.css app/assets/stylesheets/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
