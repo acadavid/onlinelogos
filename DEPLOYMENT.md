@@ -33,8 +33,8 @@ Both servers run in the same container using the `Procfile` configuration.
    # Required: Rails master key for encrypted credentials
    RAILS_MASTER_KEY=<your-master-key-from-config/master.key>
 
-   # Required: Colyseus WebSocket URL (use your Railway domain)
-   COLYSEUS_URL=wss://your-app.railway.app:2567
+   # Required: Colyseus WebSocket URL (use Railway TCP Proxy - see step 3)
+   COLYSEUS_URL=wss://hopper.proxy.rlwy.net:59786
 
    # Required: CORS origin for Colyseus (use your Railway domain)
    CORS_ORIGIN=https://your-app.railway.app
@@ -50,22 +50,20 @@ Both servers run in the same container using the `Procfile` configuration.
    RAILS_ENV=production
    ```
 
-3. **Expose both ports**:
+3. **Enable TCP Proxy for Colyseus**:
 
    Railway needs to expose both port 80 (Rails) and 2567 (Colyseus).
 
-   **Important**: Railway only exposes one port by default. You'll need to:
-   - The web server (port 80) will be automatically exposed
-   - For Colyseus (port 2567), you have two options:
-
-     **Option A - Use the same domain (Recommended)**:
-     Update `COLYSEUS_URL` to use the same domain as your app:
+   **Setup TCP Proxy**:
+   - In Railway dashboard, go to your service → Settings → Networking
+   - Click "Add TCP Proxy"
+   - Enter port: `2567`
+   - Railway will provide a TCP proxy address like: `hopper.proxy.rlwy.net:59786`
+   - Copy this address and update your `COLYSEUS_URL` environment variable:
      ```
-     COLYSEUS_URL=wss://your-app.railway.app:2567
+     COLYSEUS_URL=wss://hopper.proxy.rlwy.net:59786
      ```
-
-     **Option B - Use Railway's TCP Proxy**:
-     Enable TCP proxy in Railway settings for port 2567
+   - **Important**: Use the exact proxy address Railway gives you (the port will be different)
 
 4. **Deploy**:
    - Railway will automatically build and deploy using the Dockerfile
@@ -120,19 +118,13 @@ After deployment:
 
 ## Important Notes
 
-### Port Exposure
-Railway only exposes one HTTP/HTTPS port by default. For the Colyseus WebSocket server:
+### Port Exposure via TCP Proxy
+Railway exposes HTTP/HTTPS traffic automatically, but for the Colyseus WebSocket server on port 2567, you **must** use Railway's TCP Proxy feature:
 
-1. **During initial setup**: Set `COLYSEUS_URL` to use the same domain with port 2567:
-   ```
-   COLYSEUS_URL=wss://your-app.railway.app:2567
-   ```
-
-2. **If WebSocket connections fail**: Railway may not expose port 2567 directly. In this case, you have two options:
-
-   **Option A**: Use Railway's TCP Proxy feature (see Railway docs)
-
-   **Option B**: Proxy Colyseus through Rails (requires code changes - ask Claude Code for help)
+1. **TCP Proxy is required** - Without it, clients cannot connect to Colyseus
+2. **Use the proxy address** - Always use the `hopper.proxy.rlwy.net:XXXXX` address Railway provides
+3. **Don't use your app domain with :2567** - This won't work as Railway doesn't expose arbitrary ports on your app domain
+4. **WSS protocol** - Use `wss://` (WebSocket Secure) not `ws://` for the TCP proxy URL
 
 ### Database
 - The app uses SQLite3 which stores the database in `/rails/storage/`
@@ -160,10 +152,12 @@ Or in the Railway dashboard under the "Deployments" tab.
 
 ## Troubleshooting
 
-### "Failed to connect to game server"
-- Check that `COLYSEUS_URL` environment variable is set correctly
-- Verify port 2567 is accessible (check Railway port settings)
-- Check Colyseus logs: `railway logs | grep colyseus`
+### "Failed to connect to game server" or NS_BINDING_ABORTED
+- Verify TCP Proxy is enabled in Railway Settings → Networking
+- Check that `COLYSEUS_URL` uses the Railway TCP proxy address (e.g., `wss://hopper.proxy.rlwy.net:59786`)
+- **Do NOT use** your app domain with `:2567` - Railway doesn't expose arbitrary ports on app domains
+- Check Colyseus server is running: `railway logs | grep colyseus`
+- Verify CORS_ORIGIN matches your app domain exactly
 
 ### "CORS error"
 - Ensure `CORS_ORIGIN` matches your Railway domain exactly (including https://)
